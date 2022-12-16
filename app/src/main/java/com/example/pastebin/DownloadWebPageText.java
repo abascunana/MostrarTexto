@@ -6,6 +6,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,67 +52,11 @@ public class DownloadWebPageText extends AsyncTask {
 // the web page content as a InputStream, which it returns as
 // a string.
     private String downloadUrl(String myurl) throws IOException {
-        InputStream is = null;
-        // Only display the first 500 characters of the retrieved
-        // web page content.
-        int len = 10000;
 
-        try {
-            URL url = new URL(myurl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000 /* milliseconds */);
-            conn.setConnectTimeout(15000 /* milliseconds */);
-            conn.setRequestMethod("GET");
-            conn.setDoInput(true);
-            // Starts the query
-            conn.connect();
-            is = conn.getInputStream();
-
-            // Convert the InputStream into a string
-            contentAsString = readIt(is, len);
-
-
-            // Makes sure that the InputStream is closed after the app is
-            // finished using it.
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-
+        Document doc = Jsoup.connect(myurl).get();
+        String texto = String.valueOf(doc.getElementById("articleContent").text());
+        System.out.println(texto);
+        contentAsString = texto;
         return contentAsString;
-    }
-    public String readIt(InputStream stream, int len) throws IOException, UnsupportedEncodingException {
-        Reader reader = null;
-        String resultado ="";
-        reader = new InputStreamReader(stream, "UTF-8");
-        char[] buffer = new char[len];
-        reader.read(buffer);
-//Buscar como hacer esto en JSOUP
-        for (int i = 0; i < buffer.length; i++) {
-            if (buffer[i] == '<'){
-                if (buffer[i+1] == 'p'){
-                    if (buffer[i+2] == '>'){
-                       boolean cogertexto = true;
-                       int j =++i+2;
-                       while (cogertexto){
-                           if (buffer[j] == '<'){
-                               break;
-                           }
-                           resultado +=buffer[j];
-                        j++;
-                       }
-                    }
-                }
-            }
-        }
-
-        return resultado;
     }
 }
